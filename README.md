@@ -361,4 +361,32 @@ typedef struct BIOS_Parameter_Block_struct {
 ```
 
 Les nombres sont encodées en `little endian`. C'est pour cela que les nombres de plus de 8 bits
-sont
+sont enregistrés dans un tableau: on utilise une macro pour les reconstruires correctement. Regardons les champs:
+
+-    `uint8 BS_jmpBoot[3];`: L'instruction `jmp` au début du code. Permet au processeur de sauter par dessus les données
+-    `uint8 BS_OEMName[8];`: Le nom du système
+-    `uint8 BPB_BytsPerSec[2]; // 512, 1024, 2048 or 4096`: le nombre de bytes dans un secteur
+-    `uint8 BPB_SecPerClus;     // 1, 2, 4, 8, 16, 32, 64 or 128`: le nombre de secteurs dans un cluster
+-    `uint8 BPB_RsvdSecCnt[2];  // 1 for FAT12 and FAT16, typically 32 for FAT32`: le nombre de secteur réservés (pour ce que l'on veut)
+-    `uint8 BPB_NumFATs;        // should be 2`: Le nombre de tables FAT (que l'on verra par après)
+-    `uint8 BPB_RootEntCnt[2];` Le nombre d'entrées root (0 en FAT32)
+-    `uint8 BPB_TotSec16[2];` Le nombre total de secteurs (pas en FAT32)
+-    `uint8 BPB_Media;` Le type de média physique (`0xF8` pour un disque dur)
+-    `uint8 BPB_FATSz16[2];` Le nombre de secteur pour une table FAT
+-    `uint8 BPB_SecPerTrk[2];` Le nombre de secteur par track
+-    `uint8 BPB_NumHeads[2];` Le nombre de têtes
+-    `uint8 BPB_HiddSec[4];` Le nombre de secteurs cachés (on assumera 0)
+-    `uint8 BPB_TotSec32[4];` Le nombre total de secteurs, cette fois pour FAT 23
+-    `uint8 BPB_FATSz32[4];` La taille d'une table FAT (pour fat 32)
+-    `uint8 BPB_ExtFlags[2];` On ignore ce champ
+-    `uint8 BPB_FSVer[2];` La version du système de fichier
+-    `uint8 BPB_RootClus[4];` Le cluster de la table du dossier root (ici on assumera que c'est toujours 2)
+-    `uint8 BPB_FSInfo[2];` La version (on ignore)
+-    `uint8 BPB_BkBootSec[2];`
+-    `uint8 BPB_Reserved[12];`
+-    `uint8 BS_DrvNum;` On ignore
+-    `uint8 BS_Reserved1;` On ignore (réservé)
+-    `uint8 BS_BootSig;` On ignore
+-    `uint8 BS_VolID[4];` On ignore
+-    `uint8 BS_VolLab[11];` On ignore
+-    `uint8 BS_FilSysType[8];` Une chaîne de caractère qui devrait dire FAT32
