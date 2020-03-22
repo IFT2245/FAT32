@@ -390,3 +390,36 @@ sont enregistrés dans un tableau: on utilise une macro pour les reconstruires c
 -    `uint8 BS_VolID[4];` On ignore
 -    `uint8 BS_VolLab[11];` On ignore
 -    `uint8 BS_FilSysType[8];` Une chaîne de caractère qui devrait dire FAT32
+
+Après avoir lu cette structure au début d'un disque, il est maintenant possible de correctement lire un système de fichier FAT32. En effet, on retrouve tous les paramètres tel que le nombre de bytes dans un secteur ainsi que le nombre de secteurs par cluster.
+
+
+## Architecture d'un système de fichier FAT32
+
+Il y a trois principales sections à un système de fichier FAT32. La première est composée des secteurs réservées et cachées. Normalement, outre le MBR, que le vient de lire, nous n'avons plus besoin de cette section. Par la suite, on retrouve les tables FATs, au nombre indiqué dans le MBR. La troisième section consiste aux données. Le partitionnement du disque peut changer ces détails, mais nous allons ici considérer le cas d'un disque qui est partitionné comme le précédent, c'est à dire une unique partition qui couvre l'ensemble du disque.
+
+| Section    | Longueur                        |
+|------------|---------------------------------|
+| Entête     | 0 + $rsvd + $hidden             |
+| Tables FAT | Selon le MBR                    |
+| Données    | Selon le MBR / taille du disque |
+
+
+## Les tables FAT et leur structure
+
+On retrouve plusieurs tables FAT (*file allocation table)*. Nous n'en avons cependant besoin que d'une seule. En effet, le système FAT32 permet d'avoir plusieurs tables d'allocation afin de permettre d'avoir de la redondance en cas que certains secteurs ne peuvent pas être lus. La table FAT permet de lire les fichiers et dossiers qui requierent plus qu'un seul cluster d'espace. On pourrait croire que cette table n'est pas nécéssaire et qu'il suffit d'aller lire le cluster suivant, mais ce n'est pas le cas. En effet, les clusters d'un fichier ne sont pas nécéssairement consécutif (pour permettre les changements de tailles de fichier même une fois le système initialisé). 
+
+Un table FAT est un tableau contigüe d'entiers de 32 bits de large (d'ou le nom FAT*32*). Chaque cellule du tableau FAT contient le cluster qui suit le cluster identifié par l'index de la cellule. Voici un exemple:
+
+| Cluster n | Cluster n+1 | Cluster n+2 | Cluster n+3 |
+|-----------|-------------|-------------|-------------|
+| 0xFDDA   | 0xABCD       | 0xAE12BCD   |  0xA213A   |
+
+Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangées sont celles qui sont réellement écrites: la première rangée sert à donner du contexte sur les valeurs que l'on voit. 
+
+À l'entrée n, le nombre 0xFDDA indique que le cluster qui suit le cluster n est le cluster 0xFDDA. La même logique s'applique pour tous les autres clusters. Il y a cependant quelques valeurs spéciales:
+
+- Une valeur de 0 indique que le cluster n'est pas utilisé. Il est donc libre d'être affecté comme premier cluster d'un nouveau fichier, ou d'être utilisé comme un cluster à une position arbitraire dans une autre chaîne.
+- Une valeur plus grande ou égale à 0xFFFFFF8 indique qu'il s'agit du dernier cluster d'une chaîne. Le fichier est donc terminé à ce cluster.
+- Un numéro de cluster, bien qu'écrit sur 32 bits, n'utilise que 28 bits. Les 4 bits du haut sont donc réservés et pourraient avoir une valeur arbitraire. Il faut donc les ignorer.
+- Les numéros de clusters sont aussi écrit en `little endian`. Il faut donc renverser les bytes lus pour être capable de lire un fichier.
