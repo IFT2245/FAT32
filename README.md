@@ -442,7 +442,7 @@ Le reste de la zone des données correspond à des contenus de fichiers, ou des 
 
 Un fichier FAT32 ne contient pas de structure particulières: les données sont écrites comme elles se trouvent dans le fichier. Il suffit donc de lire les bytes correctement, et de suivre les clusters correctement pour lire un fichier.
 
-## La structure d'un dossier
+### La structure d'un dossier
 
 Afin de pouvoir identifier les fichiers contenus dans un dossier, une structure spéciale est donnée au contenu des dossiers. Il s'agit de blocs contiguës de ce que l'on appel des "entrées de fichiers". Celles-ci ont cette structure:
 
@@ -490,8 +490,17 @@ La largeur totale d'une entrée est de 32 bytes, ce qui garantie que dans une m�
 
 #### Détail des champs
 
+##### Name
 Le champ `name` contient le nom du fichier (ou dossier). Le nom est toujours en majuscule. Le caractère espace doit être traduit par un symbol vide. Cela implique qu'un espace n'est pas un caractère valide dans un nom de fichier. Les trois derniers caractères sont l'extension, mais le point n'est pas là: il est implicite. Voici quelques examples:
 
-- unfichie.txt:`UNFICHIETXT`
-- petit.txt:   `PETIT   TXT`
-- dossier  :   `DOSSIER    `
+- `unfichie.txt: |UNFICHIETXT|`
+- `petit.txt   : |PETIT   TXT|`
+- `dossier     : |DOSSIER    |`
+
+Les `|` sont simplement pour délimiter les noms et indiquer que le champ est toujours 11 bytes de long.
+
+Si le premier caractère du nom est 0xE5, l'entrée à été supprimée. Cependant, l'entrée suivante pourrait être utilisée. Par contre, si le premier caractère est 0x00, l'entrée n'est pas utilisée et les prochaines entrées ne sont pas utilisées non plus.
+
+##### Attribut
+
+Le champ attribut contient les attributs du fichier. On ne détaillera pas toutes les valeurs ici, mais si la valeur masquée par 0x10 est positive, on peut conclure que l'entrée indique un dossier et non fichier.
