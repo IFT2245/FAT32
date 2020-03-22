@@ -413,7 +413,7 @@ Un table FAT est un tableau contigüe d'entiers de 32 bits de large (d'ou le nom
 
 | Cluster n | Cluster n+1 | Cluster n+2 | Cluster n+3 |
 |-----------|-------------|-------------|-------------|
-| 0xFDDA   | 0xABCD       | 0xAE12BCD   |  0xA213A   |
+| 0xFDDA   | 0xABCD       | 0xAE12BCD   |  0xA213A    |
 
 Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangées sont celles qui sont réellement écrites: la première rangée sert à donner du contexte sur les valeurs que l'on voit. 
 
@@ -483,7 +483,7 @@ typedef struct FAT_directory_entry_struct {
 Si `$cluster_high` et `$cluster_low` sont les parties hautes et basse du premier cluster du fichier respectivement, le premier cluster du fichier est donc:
 
 ```php
-cluster = ($cluster_high << 16) + $cluster_low
+$cluster = ($cluster_high << 16) + $cluster_low
 ```
 
 La largeur totale d'une entrée est de 32 bytes, ce qui garantie que dans une même secteur, un nombre entier d'entrées s'y trouvent. Cela facilite la lecture des entrées dans un dossier.
@@ -504,3 +504,7 @@ Si le premier caractère du nom est 0xE5, l'entrée à été supprimée. Cependa
 ##### Attribut
 
 Le champ attribut contient les attributs du fichier. On ne détaillera pas toutes les valeurs ici, mais si la valeur masquée par 0x10 est positive, on peut conclure que l'entrée indique un dossier et non fichier.
+
+### Navigation dans le système
+
+Nous avons donc maintenant assez d'information sur la structure de FAT32 pour pouvoir naviguer dans une archive. Étant donné un chemin, il suffit de le décomposer en dossier à suivre, de lire le contenu de chaque dossier pour trouver le premier cluster du prochain dossier / fichier et de continuer à naviguer ainsi. Il faut faire attention lors de la lecture d'une entrée à bien passer d'un cluster à l'autre, ce qui permet de lire la suite du fichier / dossier.
