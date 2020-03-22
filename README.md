@@ -33,6 +33,8 @@ Un cluster est un groupement de secteurs. Encore une fois, FAT32 tiens compte de
 
 FAT32 permet de s'adapter à des tailles de cluster variables. Encore une fois, il faut tenir cela en compte lorsqu'on travaille avec le système de fichier. Un cluster pourrait être un seul secteur ou plus. Cependant, un cluster est toujours une puissance de 2. Ainsi, il est possible d'utiliser le logarithme en base 2 pour stocker le nombre de *secteurs par cluster*, ce qui permet de faire des opérations de multiplication efficaces en utiliser des bitshifts.
 
+FAT32 utilisent la terminologie cluster de la même façon que l'on parle de cluster sur un disque, mais avec la particularité que le premier cluster ne se trouve pas au début du disque, mais bien au début de la zone de données. Plus de détails sur cela suivront.
+
 
 ## L'accès à l'information sur un disque dur
 
