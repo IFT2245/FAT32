@@ -405,7 +405,7 @@ Il y a trois principales sections à un système de fichier FAT32. La première 
 | Données    | Selon le MBR / taille du disque |
 
 
-## Les tables FAT et leur structure
+### Les tables FAT et leur structure
 
 On retrouve plusieurs tables FAT (*file allocation table)*. Nous n'en avons cependant besoin que d'une seule. En effet, le système FAT32 permet d'avoir plusieurs tables d'allocation afin de permettre d'avoir de la redondance en cas que certains secteurs ne peuvent pas être lus. La table FAT permet de lire les fichiers et dossiers qui requierent plus qu'un seul cluster d'espace. On pourrait croire que cette table n'est pas nécéssaire et qu'il suffit d'aller lire le cluster suivant, mais ce n'est pas le cas. En effet, les clusters d'un fichier ne sont pas nécéssairement consécutif (pour permettre les changements de tailles de fichier même une fois le système initialisé). 
 
@@ -423,3 +423,13 @@ Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangées sont ce
 - Une valeur plus grande ou égale à 0xFFFFFF8 indique qu'il s'agit du dernier cluster d'une chaîne. Le fichier est donc terminé à ce cluster.
 - Un numéro de cluster, bien qu'écrit sur 32 bits, n'utilise que 28 bits. Les 4 bits du haut sont donc réservés et pourraient avoir une valeur arbitraire. Il faut donc les ignorer.
 - Les numéros de clusters sont aussi écrit en `little endian`. Il faut donc renverser les bytes lus pour être capable de lire un fichier.
+
+Il est important de se rappeler que le premier cluster des données n'est pas nécéssairement le cluster 0. Les données contenue dans le MBR indiquent (la plupart du temps) que le premier cluster est le cluster 2. Les cluster 0 et 1, dans ce cas, contiennent des valeurs réservées.
+
+### La zone de données
+
+Après les tables FAT, on retrouve les données. Le premier fichier, appelé le root entry, correspond au dossier au niveau root du disque. Tous les autres fichiers sont des descendants de ce dossier. Son numéro de cluster est indiqué dans le bloc de paramètres qui est placé au début du disque. La zone de données est relative au début de ce fichier. On calcule donc le LBA d'un cluster en fonction de celui-ci. Si `$root-entry` correspond au numéro de cluster de ce dossier, et que `$begin = $rsvd + $hidden + $no-fats * $fat-size`, les paramètres correspondant dans la table, on calcule le LBA de cette façon:
+
+```php
+lba($cluster) = $begin + ($cluster - $root-entry) * $sectors-per-clusters
+```
