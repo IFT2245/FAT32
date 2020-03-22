@@ -422,7 +422,7 @@ Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangées sont ce
 - Une valeur de 0 indique que le cluster n'est pas utilisé. Il est donc libre d'être affecté comme premier cluster d'un nouveau fichier, ou d'être utilisé comme un cluster à une position arbitraire dans une autre chaîne.
 - Une valeur plus grande ou égale à 0xFFFFFF8 indique qu'il s'agit du dernier cluster d'une chaîne. Le fichier est donc terminé à ce cluster.
 - Un numéro de cluster, bien qu'écrit sur 32 bits, n'utilise que 28 bits. Les 4 bits du haut sont donc réservés et pourraient avoir une valeur arbitraire. Il faut donc les ignorer.
-- Les numéros de clusters sont aussi écrit en `little endian`. Il faut donc renverser les bytes lus pour être capable de lire un fichier.
+- Les numéros de clusters sont aussi écrit en `little endian`, comme les données du MBR.
 
 Il est important de se rappeler que le premier cluster des données n'est pas nécéssairement le cluster 0. Les données contenue dans le MBR indiquent (la plupart du temps) que le premier cluster est le cluster 2. Les cluster 0 et 1, dans ce cas, contiennent des valeurs réservées.
 
@@ -433,3 +433,32 @@ Après les tables FAT, on retrouve les données. Le premier fichier, appelé le 
 ```php
 lba($cluster) = $begin + ($cluster - $root-entry) * $sectors-per-clusters
 ```
+
+Ainsi, étant donné un numéro de cluster, le premier secteur identifié par ce cluster correspond au résultat de la formule. On obtient que la zone de données commence au secteur `lba($root-entry)`.
+
+Le reste de la zone des données correspond à des contenus de fichiers, ou des contenus de dossier, dépendamment de ou on se trouve. Regardons maintenant comment ces données sont structurées.
+
+### La structure d'un fichier
+
+Un fichier FAT32 ne contient pas de structure particulières: les données sont écrites comme elles se trouvent dans le fichier. Il suffit donc de lire les bytes correctement, et de suivre les clusters correctement pour lire un fichier.
+
+## La structure d'un dossier
+
+Afin de pouvoir identifier les fichiers contenus dans un dossier, une structure spéciale est donnée au contenu des dossiers. Il s'agit de blocs contiguës de ce que l'on appel des "entrées de fichiers". Celles-ci ont cette structure:
+
+| Nom                             | Largeur (bytes) |
+|---------------------------------|-----------------|
+| Nom du fichier                  | 11              |
+| Attributs du fichier            | 1               |
+| Reservé                         | 1               |
+| 10iem de secondes               | 1               |
+| Heure de création               | 2               |
+| Date de création                | 2               |
+| Date du dernier accès           | 2               |
+| Partie haute du premier cluster | 2               |
+| Dernière heure d'écriture       | 2               |
+| Dernière date d'écriture        | 2               |
+| Partie basse du premier cluster | 2               |
+| Taille du fichier               | 4               |
+
+
