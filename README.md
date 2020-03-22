@@ -461,4 +461,37 @@ Afin de pouvoir identifier les fichiers contenus dans un dossier, une structure 
 | Partie basse du premier cluster | 2               |
 | Taille du fichier               | 4               |
 
+Une structure C pourrait donc être construite ainsi:
 
+```C
+typedef struct FAT_directory_entry_struct {
+    uint8 DIR_Name[FAT_NAME_LENGTH];
+    uint8 DIR_Attr;
+    uint8 DIR_NTRes;
+    uint8 DIR_CrtTimeTenth;
+    uint8 DIR_CrtTime[2];
+    uint8 DIR_CrtDate[2];
+    uint8 DIR_LstAccDate[2];
+    uint8 DIR_FstClusHI[2];
+    uint8 DIR_WrtTime[2];
+    uint8 DIR_WrtDate[2];
+    uint8 DIR_FstClusLO[2];
+    uint8 DIR_FileSize[4];
+} FAT_entry;
+```
+
+Si `$cluster_high` et `$cluster_low` sont les parties hautes et basse du premier cluster du fichier respectivement, le premier cluster du fichier est donc:
+
+```php
+cluster = ($cluster_high << 16) + $cluster_low
+```
+
+La largeur totale d'une entrée est de 32 bytes, ce qui garantie que dans une même secteur, un nombre entier d'entrées s'y trouvent. Cela facilite la lecture des entrées dans un dossier.
+
+#### Détail des champs
+
+Le champ `name` contient le nom du fichier (ou dossier). Le nom est toujours en majuscule. Le caractère espace doit être traduit par un symbol vide. Cela implique qu'un espace n'est pas un caractère valide dans un nom de fichier. Les trois derniers caractères sont l'extension, mais le point n'est pas là: il est implicite. Voici quelques examples:
+
+- unfichie.txt:`UNFICHIETXT`
+- petit.txt:   `PETIT   TXT`
+- dossier  :   `DOSSIER    `
