@@ -493,11 +493,11 @@ La largeur totale d'une entrée est de 32 bytes, ce qui garantie que dans une m�
 ##### Name
 Le champ `name` contient le nom du fichier (ou dossier). Le nom est toujours en majuscule. Le caractère espace doit être traduit par un symbol vide. Cela implique qu'un espace n'est pas un caractère valide dans un nom de fichier. Les trois derniers caractères sont l'extension, mais le point n'est pas là: il est implicite. Voici quelques examples:
 
-- `unfichie.txt: |UNFICHIETXT|`
-- `petit.txt   : |PETIT   TXT|`
-- `dossier     : |DOSSIER    |`
+- `unfichie.txt:_|UNFICHIETXT|`
+- `petit.txt____:|PETIT___TXT|`
+- `dossier______:|DOSSIER____|`
 
-Les `|` sont simplement pour délimiter les noms et indiquer que le champ est toujours 11 bytes de long.
+Les `|` sont simplement pour délimiter les noms et indiquer que le champ est toujours 11 bytes de long. Les `_` indiquent un espace (le caractère 32 de la table ascii).
 
 Si le premier caractère du nom est 0xE5, l'entrée à été supprimée. Cependant, l'entrée suivante pourrait être utilisée. Par contre, si le premier caractère est 0x00, l'entrée n'est pas utilisée et les prochaines entrées ne sont pas utilisées non plus.
 
