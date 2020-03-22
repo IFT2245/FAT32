@@ -505,8 +505,8 @@ Si le premier caractère du nom est 0xE5, l'entrée à été supprimée. Cependa
 
 ##### Attribut
 
-Le champ attribut contient les attributs du fichier. On ne détaillera pas toutes les valeurs ici, mais si la valeur masquée par 0x10 est positive, on peut conclure que l'entrée indique un dossier et non fichier.
+Le champ attribut contient les attributs du fichier. On ne détaillera pas toutes les valeurs ici, mais si la valeur masquée par 0x10 est non-nulle, on peut conclure que l'entrée indique un dossier et non fichier.
 
 ### Navigation dans le système
 
-Nous avons donc maintenant assez d'information sur la structure de FAT32 pour pouvoir naviguer dans une archive. Étant donné un chemin, il suffit de le décomposer en dossier à suivre, de lire le contenu de chaque dossier pour trouver le premier cluster du prochain dossier / fichier et de continuer à naviguer ainsi. Il faut faire attention lors de la lecture d'une entrée à bien passer d'un cluster à l'autre, ce qui permet de lire la suite du fichier / dossier.
+Nous avons donc maintenant assez d'information sur la structure de FAT32 pour pouvoir naviguer dans une archive. Étant donné un chemin, il suffit de le décomposer en dossier à suivre, de lire le contenu de chaque dossier pour trouver le premier cluster du prochain dossier / fichier et de continuer à naviguer ainsi. Il faut faire attention lors de la lecture d'une entrée à bien passer d'un cluster à l'autre, ce qui permet de lire la suite du fichier / dossier. 
