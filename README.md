@@ -29,7 +29,7 @@ Un disque dur, comme plusieurs médium de stockage, ne permet pas de lire un byt
 
 ## Les clusters
 
-Un cluster est un groupement de secteurs. Encore une fois, FAT32 tiens compte de cette structure de donnée. Afin d'éviter du vas à viens inutile sur un disque, le système de fichier FAT32 ne permet **pas** d'allouer une structure plus petite qu'un cluster. C'est la première influence de la considération de la rapidité d'accès que l'on retrouve dans FAT32. Vous l'aurez compris, un fichier occupe donc toujours un minimum d'un cluster comme taille physique sur un disque. La taille logique peut être cependant plus petite.
+Un cluster est un groupement de secteurs. Encore une fois, FAT32 tiens compte de cette structure de donnée. Afin d'éviter du vas et viens inutile sur un disque, le système de fichier FAT32 ne permet **pas** d'allouer une structure plus petite qu'un cluster. C'est la première influence de la considération de la rapidité d'accès que l'on retrouve dans FAT32. Vous l'aurez compris, un fichier occupe donc toujours un minimum d'un cluster comme taille physique sur un disque. La taille logique peut être cependant plus petite.
 
 FAT32 permet de s'adapter à des tailles de cluster variables. Encore une fois, il faut tenir cela en compte lorsqu'on travaille avec le système de fichier. Un cluster pourrait être un seul secteur ou plus. Cependant, un cluster est toujours une puissance de 2. Ainsi, il est possible d'utiliser le logarithme en base 2 pour stocker le nombre de *secteurs par cluster*, ce qui permet de faire des opérations de multiplication efficaces en utiliser des bitshifts.
 
