@@ -510,3 +510,83 @@ Le champ attribut contient les attributs du fichier. On ne détaillera pas toute
 ### Navigation dans le système
 
 Nous avons donc maintenant assez d'information sur la structure de FAT32 pour pouvoir naviguer dans une archive. Étant donné un chemin, il suffit de le décomposer en dossier à suivre, de lire le contenu de chaque dossier pour trouver le premier cluster du prochain dossier / fichier et de continuer à naviguer ainsi. Il faut faire attention lors de la lecture d'une entrée à bien passer d'un cluster à l'autre, ce qui permet de lire la suite du fichier / dossier. 
+
+
+## Commande pour explorer une archive
+
+Plusieurs outils peuvent être utilisés pour explorer une archive FAT32. Le premier, mais pas nécéssairement le plus utile, est la commande `mount` qui permet de monter une archive comme un disque (après tout, c'est exactement ce que c'est). La commande mount est utile, mais ne permet pas de voir la représentation binaire des objets. Lorsque vous implémenter un _pilote_ tel que le TP4 le demande, il est pratique de voir exactement la structure binaire des fichiers.
+
+Pour cela, la commande `hexdump` est beaucoup plus pratique. Elle permet de lire un fichier binaire et d'imprimer les bytes lus en format hex (en fait, vous pouvez changer la représentation). Personnellement, je conseil d'utiliser la commande en mode canonique (option `-C`) qui va imprimer une représentation ASCII des charactères. En plus d'avoir l'air d'un hacker, vous pouvez lire les noms de fichiers, ou le contenu de ceux-ci, ce qui vous permet de vous repérer si vous n'êtes pas certain de votre positionnement dans le fichier.
+
+Voici un exemple, qui contient le boot block montré plus haut:
+
+```sh
+> hexdump -C -n 512 floppy.img
+00000000  eb 58 00 4d 49 4d 4f 53  41 00 00 00 02 01 20 00  |.X.MIMOSA..... .|
+00000010  02 00 00 00 00 f8 00 00  12 00 02 00 00 00 00 00  |................|
+00000020  00 00 01 00 f8 01 00 00  00 00 00 00 02 00 00 00  |................|
+00000030  02 00 ff ff 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000040  80 01 29 ff ff ff ff 4d  49 4d 4f 53 41 20 4f 53  |..)....MIMOSA OS|
+00000050  00 00 46 41 54 33 32 20  20 20 fa 31 c9 8e d9 8e  |..FAT32   .1....|
+00000060  d1 bc 00 00 fb 88 16 40  7c 66 50 66 53 be 03 7c  |.......@|fPfS..||
+00000070  e8 25 01 be 33 7d e8 1f  01 66 5b 66 58 b4 08 cd  |.%..3}...f[fX...|
+00000080  13 72 71 fe c6 c1 ea 08  89 16 1a 7c 80 e1 3f 30  |.rq........|..?0|
+00000090  ed 89 0e 18 7c 66 b8 01  00 00 00 66 bb 00 7e 00  |....|f.....f..~.|
+000000a0  00 e8 19 00 be a9 7f e8  ee 00 b8 20 00 31 d2 f7  |........... .1..|
+000000b0  26 11 7c f7 36 0b 7c a3  11 7d e9 43 01 60 66 89  |&.|.6.|..}.C.`f.|
+000000c0  c2 66 c1 ea 10 f7 36 18  7c 42 88 d1 31 d2 f7 36  |.f....6.|B..1..6|
+000000d0  1a 7c c0 e4 06 08 e1 88  c5 88 d6 8a 16 40 7c 66  |.|...........@|f|
+000000e0  89 d8 66 c1 e8 04 8e c0  83 e3 0f b8 01 02 cd 13  |..f.............|
+000000f0  72 02 61 c3 66 50 66 53  be 36 7d e8 9a 00 be 6a  |r.a.fPfS.6}....j|
+00000100  7d e8 94 00 66 5b 66 58  30 e4 cd 16 ea f0 ff 00  |}...f[fX0.......|
+00000110  f0 00 00 00 00 00 00 00  00 0a 0d 50 72 65 73 73  |...........Press|
+00000120  20 61 6e 79 20 6b 65 79  20 74 6f 20 72 65 62 6f  | any key to rebo|
+00000130  6f 74 00 0a 0d 00 49 4f  20 45 72 72 6f 72 2e 20  |ot....IO Error. |
+00000140  54 68 65 20 73 79 73 74  65 6d 20 66 61 69 6c 65  |The system faile|
+00000150  64 20 74 6f 20 6c 6f 61  64 2e 20 50 6c 65 61 73  |d to load. Pleas|
+00000160  65 20 72 65 62 6f 6f 74  2e 00 50 72 65 73 73 20  |e reboot..Press |
+00000170  61 6e 79 20 6b 65 79 20  74 6f 20 72 65 62 6f 6f  |any key to reboo|
+00000180  74 2e 2e 2e 00 42 4f 4f  54 20 20 20 20 53 59 53  |t....BOOT    SYS|
+00000190  b4 0e bb 07 00 cd 10 46  8a 04 84 c0 75 f2 c3 00  |.......F....u...|
+000001a0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+000001b0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 80 00  |................|
+000001c0  00 00 0c 00 00 00 00 00  00 00 00 00 01 00 00 00  |................|
+000001d0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+000001f0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 55 aa  |..............U.|
+00000200
+```
+
+L'étoile (\*) indique que les lignes sont répétées. L'option `-v` vous permet de désactiver le groupement des lignes similaires si vous le préférez.
+
+L'option `-n` vous permet de spécifier le nombre de **bytes** que vous voulez lire. Cela vous permet de vous concentrer sur la zone que vous voulez lire.
+
+L'option `-s` vous permet de sauter un nombre de bytes. Vous pouvez changer l'unité de mesure si vous voulez. 
+
+Si on veut voir le dossier root de l'archive, par exemple:
+
+```sh
+> hexdump -C -s 532480 -n 512 floppy.img
+00082000  5a 4f 4c 41 20 20 20 20  54 58 54 20 00 2b a3 78  |ZOLA    TXT .+.x|
+00082010  83 50 83 50 00 00 a3 78  83 50 03 00 bb cb 00 00  |.P.P...x.P......|
+00082020  53 50 41 4e 49 53 48 20  20 20 20 10 00 94 57 7b  |SPANISH    ...W{|
+00082030  83 50 83 50 00 00 57 7b  83 50 69 00 00 00 00 00  |.P.P..W{.Pi.....|
+00082040  41 46 4f 4c 44 45 52 20  20 20 20 10 00 2e fb 79  |AFOLDER    ....y|
+00082050  83 50 83 50 00 00 fb 79  83 50 3d 01 00 00 00 00  |.P.P...y.P=.....|
+00082060  48 45 4c 4c 4f 20 20 20  54 58 54 20 00 50 fb 7a  |HELLO   TXT .P.z|
+00082070  83 50 83 50 00 00 fb 7a  83 50 f7 02 1a 00 00 00  |.P.P...z.P......|
+00082080  e5 41 4d 42 49 54 20 20  20 20 20 10 00 64 a7 58  |.AMBIT     ..d.X|
+00082090  4b 4f 4b 4f 00 00 a7 58  4b 4f 5f 03 00 00 00 00  |KOKO...XKO_.....|
+000820a0  e5 67 00 73 00 69 00 00  00 ff ff 0f 00 c4 ff ff  |.g.s.i..........|
+000820b0  ff ff ff ff ff ff ff ff  ff ff 00 00 ff ff ff ff  |................|
+000820c0  e5 53 49 20 20 20 20 20  20 20 20 20 00 00 a8 58  |.SI         ...X|
+000820d0  4b 4f 4b 4f 00 00 a8 58  4b 4f 00 00 00 00 00 00  |KOKO...XKO......|
+000820e0  e5 67 00 73 00 69 00 2e  00 65 00 0f 00 ce 78 00  |.g.s.i...e....x.|
+000820f0  65 00 00 00 ff ff ff ff  ff ff 00 00 ff ff ff ff  |e...............|
+00082100  e5 53 49 20 20 20 20 20  45 58 45 20 00 00 a8 58  |.SI     EXE ...X|
+00082110  4b 4f 4b 4f 00 00 a8 58  4b 4f 00 00 00 00 00 00  |KOKO...XKO......|
+00082120  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+```
+
+Ici on peut voir les fichiers `ZOLA.TXT`, `HELLO.TXT` et les dossiers `SPANISH` ainsi que `AFOLDER`. Évidemment, il faut connaître le bon emplacement de chaque chose. Ici, on peut voir que le début du premier secteur de données correspond aux bytes qui suivent 532480. Ce genre d'information peut être obtenu en analyant le block de paramètres au début de l'archive.
