@@ -442,7 +442,7 @@ Le reste de la zone des données correspond à des contenus de fichiers, ou des 
 
 ### La structure d'un fichier
 
-Un fichier FAT32 ne contient pas de structure particulières: les données sont écrites comme elles se trouvent dans le fichier. Il suffit donc de lire les bytes correctement, et de suivre les clusters correctement pour lire un fichier. Le premier cluster d'un fichier se trouve à l'endroit indiqué dans l'entrée.
+Un fichier FAT32 ne contient pas de structure particulières: les données sont écrites comme elles se trouvent dans le fichier. Il suffit donc de lire les bytes correctement, et de suivre les clusters correctement pour lire un fichier. Le premier cluster d'un fichier se trouve à l'endroit indiqué dans l'entrée qui décrit le fichier (on verra cette structure dans la prochaine section).
 
 ### La structure d'un dossier
 
