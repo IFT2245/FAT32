@@ -442,9 +442,11 @@ Le reste de la zone des données correspond à des contenus de fichiers, ou des 
 
 ### La structure d'un fichier
 
-Un fichier FAT32 ne contient pas de structure particulières: les données sont écrites comme elles se trouvent dans le fichier. Il suffit donc de lire les bytes correctement, et de suivre les clusters correctement pour lire un fichier.
+Un fichier FAT32 ne contient pas de structure particulières: les données sont écrites comme elles se trouvent dans le fichier. Il suffit donc de lire les bytes correctement, et de suivre les clusters correctement pour lire un fichier. Le premier cluster d'un fichier se trouve à l'endroit indiqué dans l'entrée.
 
 ### La structure d'un dossier
+
+À toutes fins pratique, vous pouvez considérer les dossiers comme des fichiers. La seule différence se trouve au niveau de leur contenu. Tandis qu'un fichier va contenir du contenu arbitraire, un dossier va toujours contenir une liste contigûe d'entrées de dossier.  On regarde maintenant cette structure.
 
 Afin de pouvoir identifier les fichiers contenus dans un dossier, une structure spéciale est donnée au contenu des dossiers. Il s'agit de blocs contiguës de ce que l'on appel des "entrées de fichiers". Celles-ci ont cette structure:
 
