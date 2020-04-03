@@ -16,31 +16,31 @@ Parmis les systèmes de fichiers, on retrouve
 
 Et bien d'autres.
 
-Un système de fichier peut être décomposée en plusieurs niveau d'abstraction: on peut parler du système de fichier logique quant on se concentre sur les opérations haut niveau qu'il offre. Un système de fichier virtuel est une abstraction du matériel en composantes d'un système de fichier. C'est ce qu'on retrouve dans linux, quand on ouvre des "streams" comme des fichiers, par exemple. On se concentre ici sur la partie phyisque du système de fichier FAT32: on verra comment les données sont organisées sur le disque, et les opérations à faire pour retrouver cette information.
+Un système de fichier peut être décomposée en plusieurs niveau d'abstraction: on peut parler du système de fichier logique quant on se concentre sur les opérations haut niveau qu'il offre. Un système de fichier virtuel est une abstraction du matériel en composantes d'un système de fichier. C'est ce qu'on retrouve dans linux, quand on ouvre des "streams" comme des fichiers, par exemple. Lorsqu'on ouvre un fichier sur linux l'information n'est pas toujours issue d'un disque dur (`/dev/null`). On se concentre ici sur la partie phyisque du système de fichier FAT32: on verra comment les données sont organisées sur le disque, et les opérations à faire pour retrouver cette information. 
 
-Certains systèmes de fichiers sont créées avec le médium de stockage en tête. Un système de fichier qui à pour objectif de contenir de l'information sur un disque dur n'aura peut-être pas la même organisation qu'un système de fichier qui stocke de l'information sur un ruban. Le système de fichier FAT32 est un système qui à évolué par rapport à FAT12, et donc il à originallement été conçu pour les disquettes (floppy). Des adaptations l'ont rendu approprié pour être exécuté sur des disques durs et il a longtemps été utilisé, avant d'être remplacé par NTFS comme système de fichier pour le système Windows. Il est encore utilisé de nos jours pour des clés USBs ainsi que des appareils de photographies, qui utilisent le système de fichier FAT comme standard. 
+Certains systèmes de fichiers sont créées avec le médium de stockage en tête. Un système de fichier qui à pour objectif de contenir de l'information sur un disque dur n'aura peut-être pas la même organisation qu'un système de fichier qui stocke de l'information sur un ruban magnétique. Le système de fichier FAT32 est un système qui à évolué par rapport à FAT12, et donc il à originallement été conçu pour les disquettes (floppy). Des adaptations l'ont rendu approprié pour être exécuté sur des disques durs et il a longtemps été utilisé, avant d'être remplacé par NTFS comme système de fichier pour le système Windows. Il est encore utilisé de nos jours pour des clés USBs ainsi que des appareils de photographies, qui utilisent le système de fichier FAT comme standard. 
 
-Afin d'être capable de lire des données sur un disque formatté en FAT32, parlons d'abord de l'organisation d'un disque dur.
+Il est important de comprendre que FAT32 est un seul système de fichier. Les autres systèmes de fichier ne sont pas nécéssairement organisés de la même façon. 
 
+Afin d'être capable de lire des données sur un disque formatté en FAT32, parlons d'abord de l'organisation d'un disque dur, afin de nous donner un contexte sur le fonctionnement de FAT32.
 
 ## Les secteurs
 
-Un disque dur, comme plusieurs médium de stockage, ne permet pas de lire un byte particulier directement. En effet, la granularité est limité à ce que l'on appel un secteur. Un secteur à une interprétation physique, mais nous ne soucierions pas de celle-ci dans ce document. Un secteur est donc, pour nous, une zone de byte contigüe. Sur un disque dur, un secteur est traditionellement de 512 bytes. Le système FAT tiens compte de cette abstraction, mais ne force pas un secteur à être de taille de 512 bytes: le système de fichier peut être construit selon une taille de secteur variable. Il s'agit d'un détail important à tenir en compte.
+Un disque dur, comme plusieurs médium de stockage, ne permet pas de lire un byte particulier directement. En effet, la granularité est limité à ce que l'on appel un secteur. Un secteur à une interprétation physique, mais nous ne soucierions pas de celle-ci dans ce document. Un secteur est donc, pour nous, une zone de byte contigüe. Sur un disque dur, un secteur est traditionellement de 512 bytes. Le système FAT tient compte de cette abstraction, mais ne force pas un secteur à être de taille de 512 bytes: le système de fichier peut être construit selon une taille de secteur variable. Il s'agit d'un détail important à tenir en compte, puisque la lecture et le positonnement des données pourrait être différent.
 
 ## Les clusters
 
-Un cluster est un groupement de secteurs. Encore une fois, FAT32 tiens compte de cette structure de donnée. Afin d'éviter du vas et viens inutile sur un disque, le système de fichier FAT32 ne permet **pas** d'allouer une structure plus petite qu'un cluster. C'est la première influence de la considération de la rapidité d'accès que l'on retrouve dans FAT32. Vous l'aurez compris, un fichier occupe donc toujours un minimum d'un cluster comme taille physique sur un disque. La taille logique peut être cependant plus petite.
+Un cluster est un groupement de secteurs. Encore une fois, FAT32 tiens compte de cette structure de donnée. Afin d'éviter du vas et viens inutile sur un disque, le système de fichier FAT32 ne permet **pas** d'allouer une structure plus petite qu'un cluster. C'est la première influence de la considération de la rapidité d'accès que l'on retrouve dans FAT32. Vous l'aurez compris, un fichier occupe donc toujours un minimum d'un cluster comme taille physique sur un disque. La taille logique peut être cependant plus petite (un fichier peut-être quelques bytes, mais le cluster en entier lui est réservé). 
 
 FAT32 permet de s'adapter à des tailles de cluster variables. Encore une fois, il faut tenir cela en compte lorsqu'on travaille avec le système de fichier. Un cluster pourrait être un seul secteur ou plus. Cependant, un cluster est toujours une puissance de 2. Ainsi, il est possible d'utiliser le logarithme en base 2 pour stocker le nombre de *secteurs par cluster*, ce qui permet de faire des opérations de multiplication efficaces en utiliser des bitshifts.
 
-FAT32 utilisent la terminologie cluster de la même façon que l'on parle de cluster sur un disque, mais avec la particularité que le premier cluster ne se trouve pas au début du disque, mais bien au début de la zone de données. Plus de détails sur cela suivront.
-
+FAT32 utilisent la terminologie cluster de la même façon que l'on parle de cluster sur un disque, mais avec la particularité que le premier cluster ne se trouve pas au début du disque, mais bien au début de la zone de données. Plus de détails sur cela suivront. Il faut donc se rappeler que ce ne sont pas tous les secteurs d'une image FAT32 qui font partie d'un cluster "FAT".
 
 ## L'accès à l'information sur un disque dur
 
-Traditionnelement, l'accès à l'information sur un disque dur se fait par un modèle que l'on appel *CHS* (cylinder, head, sector). Ce modèle est une représentée des coordonnées de l'information sur le disque en 3D. Nul besoin de le dire, ce système d'addressage est très pénible à utiliser et a rapidement montré ses limites. 
+Traditionnelement, l'accès à l'information sur un disque dur se fait par un modèle que l'on appel *CHS* (cylinder, head, sector). Ce modèle est une représentée des coordonnées de l'information sur le disque en 3D. Nul besoin de le dire, ce système d'addressage est très pénible à utiliser et a rapidement montré ses limites.
 
-Il a été remplacé par le *LBA*, le logical block adressing que nous utiliserons ici. Il est beaucoup plus simple: on identifie un secteur par son numéro logique. Ainsi, on parlera du premier secteur (LBA 0), du deuxième (LBA 1), du n-ième (LBA n-1)...
+Il a été remplacé par le *LBA*, le logical block adressing que nous utiliserons ici. Il est beaucoup plus simple: on identifie un secteur par son numéro logique. Ainsi, on parlera du premier secteur (LBA 0), du deuxième (LBA 1), du n-ième (LBA n-1)... La taille des secteurs est donnée dans le bloc de paramètres. Afin d'identifier un byte précis, il est mieux de référer au byte à un offset particulier dans un secteur donné. Cela permet d'éviter d'utiliser un addressage absolu d'un byte, qui n'est pas toujours correct au travers des disques structurés différement.
 
 ## Comment avoir toute cette information pour un disque donné?
 
@@ -50,7 +50,7 @@ Traditionellement, les disques durs contiennent un *Master boot record*, qui est
 - Table de partition
 - Code de démarrage de l'OS
 
-Le MBR se trouve au début du disque, au premier secteur (LBA) et donc LBA 0. Il contient un mélange de code et d'information utile pour nous permettre de lire le disque. Voici un exemplle de MBR que j'ai écrit en assembleur, pour vous donner une idée de la structure:
+Le MBR se trouve au début du disque, au premier secteur (LBA) et donc LBA 0. Il contient un mélange de code et d'information utile pour nous permettre de lire le disque. Voici un exemplle de MBR que j'ai écrit en assembleur, pour vous donner une idée de la structure (pas besoin de comprendre le code, je l'ai laissé pour les curieux, mais la première partie est importante: ce sont les données sur la géométrie du disque).
 
 ```assembly
 jmp after_header  # jump after the header block
@@ -398,7 +398,7 @@ Après avoir lu cette structure au début d'un disque, il est maintenant possibl
 
 ## Architecture d'un système de fichier FAT32
 
-Il y a trois principales sections à un système de fichier FAT32. La première est composée des secteurs réservées et cachées. Normalement, outre le MBR, que le vient de lire, nous n'avons plus besoin de cette section. Par la suite, on retrouve les tables FATs, au nombre indiqué dans le MBR. La troisième section consiste aux données. Le partitionnement du disque peut changer ces détails, mais nous allons ici considérer le cas d'un disque qui est partitionné comme le précédent, c'est à dire une unique partition qui couvre l'ensemble du disque.
+Il y a trois principales sections à un système de fichier FAT32. La première est composée des secteurs réservées et cachées. Normalement, outre le MBR, que le vient de lire, nous n'avons plus besoin de cette section. Par la suite, on retrouve les tables FATs, au nombre indiqué dans le MBR. La troisième section consiste aux données. Le partitionnement du disque peut changer ces détails, mais nous allons ici considérer le cas d'un disque qui est partitionné comme le précédent, c'est à dire une unique partition qui couvre l'ensemble du disque. C'est une grande simplification, qui devrait faciliter la lecture du disque.
 
 | Section    | Longueur                        |
 |------------|---------------------------------|
@@ -411,7 +411,7 @@ Il y a trois principales sections à un système de fichier FAT32. La première 
 
 On retrouve plusieurs tables FAT (*file allocation table)*. Nous n'en avons cependant besoin que d'une seule. En effet, le système FAT32 permet d'avoir plusieurs tables d'allocation afin de permettre d'avoir de la redondance en cas que certains secteurs ne peuvent pas être lus. La table FAT permet de lire les fichiers et dossiers qui requierent plus qu'un seul cluster d'espace. On pourrait croire que cette table n'est pas nécéssaire et qu'il suffit d'aller lire le cluster suivant, mais ce n'est pas le cas. En effet, les clusters d'un fichier ne sont pas nécéssairement consécutif (pour permettre les changements de tailles de fichier même une fois le système initialisé). 
 
-Un table FAT est un tableau contigüe d'entiers de 32 bits de large (d'ou le nom FAT*32*). Chaque cellule du tableau FAT contient le cluster qui suit le cluster identifié par l'index de la cellule. Voici un exemple:
+Une table FAT est un tableau contigüe d'entiers de 32 bits de large (d'ou le nom FAT*32*). Chaque cellule du tableau FAT contient le cluster qui suit le cluster identifié par l'index de la cellule. Voici un exemple:
 
 | Cluster n | Cluster n+1 | Cluster n+2 | Cluster n+3 |
 |-----------|-------------|-------------|-------------|
@@ -423,7 +423,7 @@ Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangées sont ce
 
 - Une valeur de 0 indique que le cluster n'est pas utilisé. Il est donc libre d'être affecté comme premier cluster d'un nouveau fichier, ou d'être utilisé comme un cluster à une position arbitraire dans une autre chaîne.
 - Une valeur plus grande ou égale à 0xFFFFFF8 indique qu'il s'agit du dernier cluster d'une chaîne. Le fichier est donc terminé à ce cluster.
-- Un numéro de cluster, bien qu'écrit sur 32 bits, n'utilise que 28 bits. Les 4 bits du haut sont donc réservés et pourraient avoir une valeur arbitraire. Il faut donc les ignorer.
+- Un numéro de cluster, bien qu'écrit sur 32 bits, n'utilise que 28 bits. Les 4 bits du haut sont donc réservés et pourraient avoir une valeur arbitraire. Il faut donc les ignorer (un peu comme les pointeurs sur un ordinateur 64 bits, qui ne sont pas *vraiment* 64 bits).
 - Les numéros de clusters sont aussi écrit en `little endian`, comme les données du MBR.
 
 Il est important de se rappeler que le premier cluster des données n'est pas nécéssairement le cluster 0. Les données contenue dans le MBR indiquent (la plupart du temps) que le premier cluster est le cluster 2. Les cluster 0 et 1, dans ce cas, contiennent des valeurs réservées.
