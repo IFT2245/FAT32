@@ -592,3 +592,7 @@ Si on veut voir le dossier root de l'archive, par exemple:
 ```
 
 Ici on peut voir les fichiers `ZOLA.TXT`, `HELLO.TXT` et les dossiers `SPANISH` ainsi que `AFOLDER`. Évidemment, il faut connaître le bon emplacement de chaque chose. Ici, on peut voir que le début du premier secteur de données correspond aux bytes qui suivent 532480. Ce genre d'information peut être obtenu en analyant le block de paramètres au début de l'archive.
+
+### Contributions
+
+Merci à Antoine Colson pour quelques corrections grammaticales. 
