@@ -87,7 +87,7 @@ nb_hidden_sectors:
 nb_logical_sectors:
   .long 102400 
 nb_sectors_per_fat:
-  .long 788 
+  .long 504 
 mirror_flags:
   .word 0x00                                                                   # TODO
 fs_version:
