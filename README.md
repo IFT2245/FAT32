@@ -363,7 +363,11 @@ typedef struct BIOS_Parameter_Block_struct {
 ```
 
 Les nombres sont encodés en `little endian`. C'est pour cela que les nombres de plus de 8 bits
-sont enregistrés dans un tableau: on utilise une macro pour les reconstruire correctement. Regardons les champs:
+sont enregistrés dans un tableau: on utilise une macro pour les reconstruire correctement. C'est fait
+ainsi parce qu'il est possible (mais peu probable) que votre machine utilise un encodage `big endian`. 
+Dans ce cas, la valeur des nombres ne sera pas bonne.
+
+Regardons les champs:
 
 -    `uint8 BS_jmpBoot[3];`: L'instruction `jmp` au début du code. Permet au processeur de sauter par dessus les données
 -    `uint8 BS_OEMName[8];`: Le nom du système
@@ -415,7 +419,7 @@ Une table FAT est un tableau contigu d'entiers de 32 bits de large (d'ou le nom 
 
 | Cluster n | Cluster n+1 | Cluster n+2 | Cluster n+3 |
 |-----------|-------------|-------------|-------------|
-| 0xFDDA   | 0xABCD       | 0xAE12BCD   |  0xA213A    |
+| 0xFDDA    | 0xABCD      | 0xAE12BCD   |  0xA213A    |
 
 Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangée sont celles qui sont réellement écrites: la première rangée sert à donner du contexte aux les valeurs que l'on voit. 
 
@@ -423,7 +427,7 @@ Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangée sont cel
 
 - Une valeur de 0 indique que le cluster n'est pas utilisé. Il est donc libre d'être affecté comme premier cluster d'un nouveau fichier, ou d'être utilisé comme un cluster à une position arbitraire dans une autre chaîne.
 - Une valeur plus grande ou égale à 0xFFFFFF8 indique qu'il s'agit du dernier cluster d'une chaîne. Le fichier est donc terminé à ce cluster.
-- Un numéro de cluster, bien qu'écrit sur 32 bits, n'utilise que 28 bits. Les 4 bits du haut sont donc réservés et pourraient avoir une valeur arbitraire. Il faut donc les ignorer (un peu comme les pointeurs sur un ordinateur 64 bits, qui ne sont pas *vraiment* 64 bits).
+- Un numéro de cluster, bien qu'écrit sur 32 bits, n'utilise que 28 bits. Les 4 bits du haut sont donc réservés et pourraient avoir une valeur arbitraire. Il faut donc les ignorer à l'aide d'un [masque](https://en.wikipedia.org/wiki/Mask_(computing)) (un peu comme les pointeurs sur un ordinateur 64 bits, qui ne sont pas *vraiment* 64 bits).
 - Les numéros de clusters sont aussi écrit en `little endian`, comme les données du MBR.
 
 Il est important de se rappeler que le premier cluster des données n'est pas nécéssairement le cluster 0. Les données contenues dans le MBR indiquent (la plupart du temps) que le premier cluster est le cluster 2. Les cluster 0 et 1, dans ce cas, contiennent des valeurs réservées.
