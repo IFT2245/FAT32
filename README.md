@@ -16,17 +16,17 @@ Parmi les systèmes de fichiers, on retrouve
 
 Et bien d'autres.
 
-Un système de fichiers peut être décomposée en plusieurs niveaux d'abstraction: on peut parler du système de fichiers logique quant on se concentre sur les opérations haut niveau qu'il offre. Un système de fichiers virtuel est une abstraction du matériel en composantes d'un système de fichiers. C'est ce qu'on retrouve dans linux, quand on ouvre des "streams" comme des fichiers, par exemple. Lorsqu'on ouvre un fichier sur linux, l'information n'est pas toujours issue d'un disque dur (`/dev/null`). On se concentre ici sur la partie phyisque du système de fichiers FAT32: on verra comment les données sont organisées sur le disque, et les opérations à faire pour retrouver cette information. 
+Un système de fichiers peut être décomposée en plusieurs niveaux d'abstraction: on peut parler du système de fichiers logique quant on se concentre sur les opérations haut niveau qu'il offre. Un système de fichiers virtuel est une abstraction du matériel en composantes d'un système de fichiers. C'est ce qu'on retrouve dans linux, quand on ouvre des "streams" comme des fichiers, par exemple. Lorsqu'on ouvre un fichier sur linux, l'information n'est pas toujours issue d'un disque dur (`/dev/null`). On se concentre ici sur la partie physique du système de fichiers FAT32: on verra comment les données sont organisées sur le disque, et les opérations à faire pour retrouver cette information. 
 
 Certains systèmes de fichiers sont créés avec le médium de stockage en tête. Un système de fichiers qui a pour objectif de contenir de l'information sur un disque dur n'aura peut-être pas la même organisation qu'un système de fichiers qui stocke de l'information sur un ruban magnétique. Le système de fichiers FAT32 est un système qui a évolué par rapport à FAT12, et donc il a originalement été conçu pour les disquettes (floppy). Des adaptations l'ont rendu approprié pour être exécuté sur des disques durs et il a longtemps été utilisé, avant d'être remplacé par NTFS comme système de fichiers pour le système Windows. Il est encore utilisé de nos jours pour des clés USB ainsi que des appareils de photographie, qui utilisent le système de fichiers FAT comme standard. 
 
-Il est important de comprendre que FAT32 est un seul système de fichiers. Les autres systèmes de fichier ne sont pas nécéssairement organisés de la même façon. 
+Il est important de comprendre que FAT32 est un seul système de fichiers. Les autres systèmes de fichier ne sont pas nécessairement organisés de la même façon. 
 
 Afin d'être capable de lire des données sur un disque formaté en FAT32, parlons d'abord de l'organisation d'un disque dur, afin de nous donner un contexte sur le fonctionnement de FAT32.
 
 ## Les secteurs
 
-Un disque dur, comme plusieurs médiums de stockage, ne permet pas de lire un byte particulier directement. En effet, la granularité est limitée à ce que l'on appelle un secteur. Un secteur a une interprétation physique, mais nous ne soucierions pas de celle-ci dans ce document. Un secteur est donc, pour nous, une zone de bytes contigus. Sur un disque dur, un secteur est traditionellement de 512 bytes. Le système FAT tient compte de cette abstraction, mais ne force pas un secteur à être de taille de 512 bytes: le système de fichiers peut être construit selon une taille de secteur variable. Il s'agit d'un détail important dont il faut tenir compte, puisque la lecture et le positonnement des données pourrait être différents.
+Un disque dur, comme plusieurs médiums de stockage, ne permet pas de lire un byte particulier directement. En effet, la granularité est limitée à ce que l'on appelle un secteur. Un secteur a une interprétation physique, mais nous ne soucierions pas de celle-ci dans ce document. Un secteur est donc, pour nous, une zone de bytes contigus. Sur un disque dur, un secteur est traditionnellement de 512 bytes. Le système FAT tient compte de cette abstraction, mais ne force pas un secteur à être de taille de 512 bytes: le système de fichiers peut être construit selon une taille de secteur variable. Il s'agit d'un détail important dont il faut tenir compte, puisque la lecture et le positionnement des données pourrait être différents.
 
 ## Les clusters
 
@@ -38,13 +38,13 @@ FAT32 utilise la terminologie cluster de la même façon que l'on parle de clust
 
 ## L'accès à l'information sur un disque dur
 
-Traditionnelement, l'accès à l'information sur un disque dur se fait par un modèle que l'on appel *CHS* (cylinder, head, sector). Ce modèle est une représentation des coordonnées de l'information sur le disque en 3D. Nul besoin de le dire, ce système d'addressage est très pénible à utiliser et a rapidement montré ses limites.
+Traditionnellement, l'accès à l'information sur un disque dur se fait par un modèle que l'on appel *CHS* (cylinder, head, sector). Ce modèle est une représentation des coordonnées de l'information sur le disque en 3D. Nul besoin de le dire, ce système d'adressage est très pénible à utiliser et a rapidement montré ses limites.
 
-Il a été remplacé par le *LBA*, le logical block adressing que nous utiliserons ici. Il est beaucoup plus simple: on identifie un secteur par son numéro logique. Ainsi, on parlera du premier secteur (LBA 0), du deuxième (LBA 1), du n-ième (LBA n-1)... La taille des secteurs est donnée dans le bloc de paramètres. Afin d'identifier un byte précis, il est mieux de faire référence au byte à un offset particulier dans un secteur donné. Cela permet d'éviter d'utiliser un addressage absolu d'un byte, qui n'est pas toujours correct au travers des disques structurés différement.
+Il a été remplacé par le *LBA*, le logical block adressing que nous utiliserons ici. Il est beaucoup plus simple: on identifie un secteur par son numéro logique. Ainsi, on parlera du premier secteur (LBA 0), du deuxième (LBA 1), du n-ième (LBA n-1)... La taille des secteurs est donnée dans le bloc de paramètres. Afin d'identifier un byte précis, il est mieux de faire référence au byte à un offset particulier dans un secteur donné. Cela permet d'éviter d'utiliser un adressage absolu d'un byte, qui n'est pas toujours correct au travers des disques structurés différemment.
 
 ## Comment avoir toute cette information pour un disque donné?
 
-Traditionellement, les disques durs contiennent un *Master boot record*, qui est un secteur spécial qui contient de l'information précise quant au disque que l'on essaie d'utiliser. Le MBR peut contenir plusieurs types d'informations dont:
+Traditionnellement, les disques durs contiennent un *Master boot record*, qui est un secteur spécial qui contient de l'information précise quant au disque que l'on essaie d'utiliser. Le MBR peut contenir plusieurs types d'informations dont:
 
 - Organisation physique du disque, information quant au système
 - Table de partition
@@ -369,7 +369,7 @@ Dans ce cas, la valeur des nombres ne sera pas bonne.
 
 Regardons les champs:
 
--    `uint8 BS_jmpBoot[3];`: L'instruction `jmp` au début du code. Permet au processeur de sauter par dessus les données
+-    `uint8 BS_jmpBoot[3];`: L'instruction `jmp` au début du code. Permet au processeur de sauter par-dessus les données
 -    `uint8 BS_OEMName[8];`: Le nom du système
 -    `uint8 BPB_BytsPerSec[2]; // 512, 1024, 2048 or 4096`: le nombre de bytes dans un secteur
 -    `uint8 BPB_SecPerClus;     // 1, 2, 4, 8, 16, 32, 64 or 128`: le nombre de secteurs dans un cluster
@@ -413,15 +413,15 @@ Il y a trois principales sections à un système de fichiers FAT32. La première
 
 ### Les tables FAT et leur structure
 
-On retrouve plusieurs tables FAT (*file allocation table*). Cependant, nous n'en avons besoin que d'une seule. En effet, le système FAT32 permet d'avoir plusieurs tables d'allocation afin de permettre d'avoir de la redondance au cas où certains secteurs ne peuvent pas être lus. La table FAT permet de lire les fichiers et dossiers qui requièrent plus qu'un seul cluster d'espace. On pourrait croire que cette table n'est pas nécéssaire et qu'il suffit d'aller lire le cluster suivant, mais ce n'est pas le cas. En effet, les clusters d'un fichier ne sont pas nécéssairement consécutifs (pour permettre les changements de taille de fichier même une fois le système initialisé). 
+On retrouve plusieurs tables FAT (*file allocation table*). Cependant, nous n'en avons besoin que d'une seule. En effet, le système FAT32 permet d'avoir plusieurs tables d'allocation afin de permettre d'avoir de la redondance au cas où certains secteurs ne peuvent pas être lus. La table FAT permet de lire les fichiers et dossiers qui requièrent plus qu'un seul cluster d'espace. On pourrait croire que cette table n'est pas nécessaire et qu'il suffit d'aller lire le cluster suivant, mais ce n'est pas le cas. En effet, les clusters d'un fichier ne sont pas nécessairement consécutifs (pour permettre les changements de taille de fichier même une fois le système initialisé). 
 
-Une table FAT est un tableau contigu d'entiers de 32 bits de large (d'ou le nom FAT*32*). Chaque cellule du tableau FAT contient le cluster qui suit le cluster identifié par l'index de la cellule. Voici un exemple:
+Une table FAT est un tableau contigu d'entiers de 32 bits de large (d'où le nom FAT*32*). Chaque cellule du tableau FAT contient le cluster qui suit le cluster identifié par l'index de la cellule. Voici un exemple:
 
 | Cluster n | Cluster n+1 | Cluster n+2 | Cluster n+3 |
 |-----------|-------------|-------------|-------------|
 | 0xFDDA    | 0xABCD      | 0xAE12BCD   |  0xA213A    |
 
-Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangée sont celles qui sont réellement écrites: la première rangée sert à donner du contexte aux les valeurs que l'on voit. 
+Ici, on a un extrait de la chaîne. Les valeurs de la deuxième rangée sont celles qui sont réellement écrites: la première rangée sert à donner du contexte aux valeurs que l'on voit. 
 
 À l'entrée n, le nombre 0xFDDA indique que le cluster qui suit le cluster n est le cluster 0xFDDA. La même logique s'applique pour tous les autres clusters. Il y a cependant quelques valeurs spéciales:
 
@@ -450,7 +450,7 @@ Un fichier FAT32 ne contient pas de structure particulière: les données sont �
 
 ### La structure d'un dossier
 
-À toutes fins pratiques, vous pouvez considérer les dossiers comme des fichiers. La seule différence se trouve au niveau de leur contenu. Tandis qu'un fichier va contenir du contenu arbitraire, un dossier va toujours contenir une liste contigûe d'entrées de dossier.  On regarde maintenant cette structure.
+À toutes fins pratiques, vous pouvez considérer les dossiers comme des fichiers. La seule différence se trouve au niveau de leur contenu. Tandis qu'un fichier va contenir du contenu arbitraire, un dossier va toujours contenir une liste contigüe d'entrées de dossier.  On regarde maintenant cette structure.
 
 Afin de pouvoir identifier les fichiers contenus dans un dossier, une structure spéciale est donnée au contenu des dossiers. Il s'agit de blocs contigus de ce que l'on appelle des "entrées de fichiers". Celles-ci ont cette structure:
 
@@ -458,7 +458,7 @@ Afin de pouvoir identifier les fichiers contenus dans un dossier, une structure 
 |---------------------------------|-----------------|
 | Nom du fichier                  | 11              |
 | Attributs du fichier            | 1               |
-| Reservé                         | 1               |
+| Réservé                         | 1               |
 | 10iem de secondes               | 1               |
 | Heure de création               | 2               |
 | Date de création                | 2               |
@@ -488,7 +488,7 @@ typedef struct FAT_directory_entry_struct {
 } FAT_entry;
 ```
 
-Si `$cluster_high` et `$cluster_low` sont les parties haute et basse du premier cluster du fichier respectivement, le premier cluster du fichier est donc:
+Si `$cluster_high` et `$cluster_low` sont respectivement les parties haute et basse du premier cluster du fichier, alors le premier cluster du fichier est:
 
 ```php
 $cluster = ($cluster_high << 16) + $cluster_low
@@ -507,11 +507,11 @@ Le champ `name` contient le nom du fichier (ou dossier). Le nom est toujours en 
 
 Les `|` sont simplement pour délimiter les noms et indiquer que le champ est toujours 11 bytes de long. Les `_` indiquent une espace (le caractère 32 de la table ascii).
 
-Si le premier caractère du nom est 0xE5, l'entrée à été supprimée. Cependant, l'entrée suivante pourrait être utilisée. Par contre, si le premier caractère est 0x00, l'entrée n'est pas utilisée et les prochaines entrées ne sont pas utilisées non plus.
+Si le premier caractère du nom est 0xE5, l'entrée a été supprimée. Cependant, l'entrée suivante pourrait être utilisée. Par contre, si le premier caractère est 0x00, l'entrée n'est pas utilisée et les prochaines entrées ne sont pas utilisées non plus.
 
 ##### Attribut
 
-Le champ attribut contient les attributs du fichier. On ne détaillera pas toutes les valeurs ici, mais si la valeur masquée par 0x10 est non-nulle, on peut conclure que l'entrée indique un dossier et non fichier.
+Le champ attribut contient les attributs du fichier. On ne détaillera pas toutes les valeurs ici, mais si la valeur masquée par 0x10 est non-nulle, on peut conclure que l'entrée indique un dossier et non un fichier.
 
 ### Navigation dans le système
 
@@ -520,7 +520,7 @@ Nous avons donc maintenant assez d'information sur la structure de FAT32 pour po
 
 ## Commande pour explorer une archive
 
-Plusieurs outils peuvent être utilisés pour explorer une archive FAT32. Le premier, mais pas nécéssairement le plus utile, est la commande `mount` qui permet de monter une archive comme un disque (après tout, c'est exactement ce que c'est). La commande `mount` est utile, mais ne permet pas de voir la représentation binaire des objets. Lorsque vous implémentez un _pilote_ tel que le TP4 le demande, il est pratique de voir exactement la structure binaire des fichiers.
+Plusieurs outils peuvent être utilisés pour explorer une archive FAT32. Le premier, mais pas nécessairement le plus utile, est la commande `mount` qui permet de monter une archive comme un disque (après tout, c'est exactement ce que c'est). La commande `mount` est utile, mais ne permet pas de voir la représentation binaire des objets. Lorsque vous implémentez un _pilote_ tel que le TP4 le demande, il est pratique de voir exactement la structure binaire des fichiers.
 
 Pour cela, la commande `hexdump` est beaucoup plus pratique. Elle permet de lire un fichier binaire et d'imprimer les bytes lus en format hex (en fait, vous pouvez changer la représentation). Personnellement, je conseille d'utiliser la commande en mode canonique (option `-C`) qui va imprimer une représentation ASCII des charactères. En plus d'avoir l'air d'un hacker, vous pouvez lire les noms de fichiers, ou le contenu de ceux-ci, ce qui vous permet de vous repérer si vous n'êtes pas certain de votre positionnement dans le fichier.
 
@@ -595,7 +595,7 @@ Si on veut voir le dossier root de l'archive, par exemple:
 *
 ```
 
-Ici on peut voir les fichiers `ZOLA.TXT`, `HELLO.TXT` et les dossiers `SPANISH` ainsi que `AFOLDER`. Évidemment, il faut connaître le bon emplacement de chaque chose. Ici, on peut voir que le début du premier secteur de données correspond aux bytes qui suivent 532480. Ce genre d'information peut être obtenu en analyant le block de paramètres au début de l'archive.
+Ici on peut voir les fichiers `ZOLA.TXT`, `HELLO.TXT` et les dossiers `SPANISH` ainsi que `AFOLDER`. Évidemment, il faut connaître le bon emplacement de chaque chose. Ici, on peut voir que le début du premier secteur de données correspond aux bytes qui suivent 532480. Ce genre d'information peut être obtenu en analysant le block de paramètres au début de l'archive.
 
 ### Contributions
 
