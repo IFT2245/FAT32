@@ -600,3 +600,4 @@ Ici on peut voir les fichiers `ZOLA.TXT`, `HELLO.TXT` et les dossiers `SPANISH` 
 ### Contributions
 
 Merci à Antoine Colson pour quelques corrections grammaticales. 
+Merci à Luchino Allix-Lastrego pour quelques corrections grammaticales. 
